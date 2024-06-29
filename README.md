@@ -2,7 +2,7 @@
 
 This is the front end of [helloStrings](https://github.com/bridge71/helloStrings).
 
-Thanks to the project [Share-the-sky-frontend](https://github.com/wang29a/Share-the-Sky-frontend)I learned much from it.
+Thanks to the project [Share-the-sky-frontend](https://github.com/wang29a/Share-the-Sky-frontend). I learned much from it.
 
 ## Project Setup
 
