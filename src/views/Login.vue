@@ -1,15 +1,19 @@
 <template>
   <n-card>
     <n-tabs class="card-tabs" default-value="signin" size="large" animated pane-wrapper-style="margin: 0 -4px"
-      pane-style="padding-left: 454px; padding-right: 454px; box-sizing: border-box;">
+      pane-style="padding-left: 154px; padding-right: 154px; box-sizing: border-box;">
       <n-tab-pane name="signin" tab="登录">
         <n-form @submit="submitLoginForm">
           <n-form-item-row label="昵称">
             <n-input v-model:value="loginForm.nickname" placeholder="请输入昵称" />
           </n-form-item-row>
           <n-form-item-row label="密码">
-            <n-input type="password" v-model:value="loginForm.password" placeholder="请输入密码" />
+            <n-input type="password" show-password-on="mousedown" v-model:value="loginForm.password"
+              placeholder="请输入密码" />
           </n-form-item-row>
+          <template #password-visible-icon>
+            <n-icon :size="16" :component="GlassesOutline" />
+          </template>
         </n-form>
         <n-button type="primary" block secondary strong @click="submitLoginForm">
           登录
@@ -18,11 +22,15 @@
       <n-tab-pane name="signup" tab="注册">
         <n-form>
           <n-form-item-row label="昵称">
-            <n-input v-model:value="signForm.nickname" placeholder="请输入昵称" />
+            <n-input maxlength="10" show-count v-model:value="signForm.nickname" placeholder="请输入昵称" />
           </n-form-item-row>
           <n-form-item-row label="密码">
-            <n-input type="password" v-model:value="signForm.password" placeholder="请输入密码" />
+            <n-input maxlength="20" show-count type="password" show-password-on="mousedown"
+              v-model:value="signForm.password" placeholder="请输入密码" />
           </n-form-item-row>
+          <template #password-visible-icon>
+            <n-icon :size="16" :component="GlassesOutline" />
+          </template>
           <label>邮箱</label>
           <n-auto-complete v-model:value="value" :input-props="{
             autocomplete: 'disabled'
@@ -48,7 +56,7 @@
 </style>
 <script>
 import axios from 'axios';
-
+import { GlassesOutline, Glasses } from "@vicons/ionicons5";
 import { useMessage } from "naive-ui";
 import { defineComponent, ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
@@ -80,7 +88,7 @@ export default {
             sessionStorage.setItem('userToken', response.data.User.UserId);
             sessionStorage.setItem('level', response.data.User.Level);
             console.log("userToken:", sessionStorage.getItem('userToken'))
-            router.push({ name: 'book' });
+            router.push({ name: 'bookShow' });
           }
         })
         .catch(error => {

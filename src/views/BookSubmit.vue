@@ -51,7 +51,6 @@ import axios from 'axios';
 import { useRouter } from 'vue-router';
 export default {
 
-  name: 'Book',
   setup() {
     const router = useRouter();
     const formRef = ref(null);
@@ -70,10 +69,10 @@ export default {
       const token = sessionStorage.getItem('userToken');
       console.log("check Login Status, token:", sessionStorage.getItem('userToken'))
       if (token == null) {
-        router.push({ name: 'Login' });
+        router.push({ name: 'login' });
       }
     }
-    // onMounted(checkLoginStatus);
+    onMounted(checkLoginStatus);
 
     const submitBookForm = () => {
       console.log("usrToken:", sessionStorage.getItem('userToken'))
@@ -148,7 +147,7 @@ export default {
         formRef.value?.validate((errors) => {
           if (!errors) {
             submitBookForm();
-            message.success("验证成功");
+            // message.success("验证成功");
           } else {
           }
         });
