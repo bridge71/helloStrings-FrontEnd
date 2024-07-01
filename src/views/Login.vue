@@ -62,7 +62,6 @@ import { defineComponent, ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 
 export default {
-  name: 'Login',
   setup() {
     const router = useRouter();
     const message = useMessage();
@@ -84,11 +83,12 @@ export default {
         .then(response => {
           if (response.status == 200) {
             console.log("response", response.data);
-            console.log("response token", response.data.User.UserId);
-            sessionStorage.setItem('userToken', response.data.User.UserId);
-            sessionStorage.setItem('level', response.data.User.Level);
+            console.log("response token", response.data.User.userId);
+            console.log("response level", response.data.User.level);
+            sessionStorage.setItem('userToken', response.data.User.userId);
+            sessionStorage.setItem('level', response.data.User.level);
             console.log("userToken:", sessionStorage.getItem('userToken'))
-            router.push({ name: 'bookShow' });
+            router.push({ name: 'home' });
           }
         })
         .catch(error => {
@@ -104,11 +104,10 @@ export default {
         email: valueRef.value
       })
         .then(response => {
-          console.log(response.data);
-
+          // console.log("register data", response.data);
           if (response.status == 200) {
             message.success("注册成功");
-            router.push({ name: 'Login' });
+            router.push({ name: 'login' });
           }
         })
         .catch(error => {
@@ -116,16 +115,16 @@ export default {
           console.error('注册失败:', error);
         });
     };
-    const checkLoginStatus = () => {
-      const token = sessionStorage.getItem('userToken');
-      console.log("check Login Status, token:", sessionStorage.getItem('userToken'))
-      if (token) {
-        router.push({ name: 'login' });
-      }
-    }
+    // const checkLoginStatus = () => {
+    //   const token = sessionStorage.getItem('userToken');
+    //   // console.log("check Login Status, token:", sessionStorage.getItem('userToken'))
+    //   if (token) {
+    //     router.push({ name: 'login' });
+    //   }
+    // }
 
     const submitLoginForm = () => {
-      console.log(loginForm.value);
+      // console.log(loginForm.value);
 
       if (loginForm.value.nickname.trim() === '') {
         alert('请输入用户名');
@@ -140,7 +139,7 @@ export default {
     };
 
     const submitSignForm = () => {
-      console.log(signForm.value);
+      // console.log(signForm.value);
 
       if (signForm.value.nickname.trim() === '') {
         alert('请输入用户名');
@@ -159,9 +158,9 @@ export default {
       register();
     };
 
-    onMounted(() => {
-      checkLoginStatus();
-    });
+    // onMounted(() => {
+    //   checkLoginStatus();
+    // });
     const options = computed(() => {
       return ["@qq.com"].map((suffix) => {
         const prefix = valueRef.value.split("@")[0];
