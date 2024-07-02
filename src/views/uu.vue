@@ -1,4 +1,5 @@
 <template>
+
   <n-card>
     <n-tabs class="card-tabs" default-value="signin" size="large" animated pane-wrapper-style="margin: 0 -4px"
       pane-style="padding-left: 154px; padding-right: 154px; box-sizing: border-box;">
@@ -56,6 +57,8 @@
 }
 </style>
 <script>
+
+
 import Editor from 'primevue/editor';
 import axios from 'axios';
 import { GlassesOutline, Glasses } from "@vicons/ionicons5";
@@ -70,27 +73,29 @@ export default {
     const loginForm = ref({
       nickname: '',
       password: '',
-    });
-    const ipForm = ref({
-      userId: '',
       ip: '',
       lat: '',
       lng: '',
       province: '',
       city: '',
       district: '',
-    })
+    });
     const signForm = ref({
       nickname: '',
       password: '',
     });
     const valueRef = ref("");
     const value = ref("");
-
     const login = () => {
       axios.post('/user/login', {
         nickname: loginForm.value.nickname,
         password: loginForm.value.password,
+        ip: loginForm.value.ip,
+        lng: loginForm.value.lng,
+        lat: loginForm.value.lat,
+        province: loginForm.value.province,
+        city: loginForm.value.city,
+        district: loginForm.value.district
       })
         .then(response => {
           if (response.status == 200) {
@@ -101,7 +106,6 @@ export default {
             sessionStorage.setItem('level', response.data.User.level);
             console.log("userToken:", sessionStorage.getItem('userToken'))
             router.push({ name: 'home' });
-            getIP()
           }
         })
         .catch(error => {
@@ -132,6 +136,8 @@ export default {
     const submitLoginForm = async () => {
       // console.log(loginForm.value);
 
+      await getIP();
+      console.log("ss")
       if (loginForm.value.nickname.trim() === '') {
         message.warning('请输入用户名');
         return;
@@ -173,53 +179,32 @@ export default {
       });
     })
 
+
+
     const getIP = async () => {
       console.log("getting ip")
-      try {
-        const response = await axios.get('/ip?key=YHZBZ-7WPR4-AXQUK-FUHOR-5YQYH-NAFTH', {});
-        console.log("get info from qq", response.data)
-        ipForm.value.ip = response.data.result.ip;
-        ipForm.value.lat = response.data.result.location.lat;
-        ipForm.value.lng = response.data.result.location.lng;
-        ipForm.value.province = response.data.result.ad_info.province;
-        ipForm.value.city = response.data.result.ad_info.city;
-        ipForm.value.district = response.data.result.ad_info.district;
-        ipForm.value.userId = parseInt(sessionStorage.getItem("userToken"))
-        console.log(loginForm.value);
-        storeIP();
-      } catch (error) {
-        console.error('failed to get ip', error);
-      }
-    };
+      axios.get('/ip?key=YHZBZ-7WPR4-AXQUK-FUHOR-5YQYH-NAFTH', {})
+        .then(response => {
 
-    const storeIP = async () => {
-      console.log("store ip")
-      try {
-        console.log("ipform", ipForm.value)
-        console.log("ip", ipForm.value.ip)
-        const response = axios.post('/user/ip/store', {
-          userId: ipForm.value.userId,
-          ip: ipForm.value.ip,
-          lng: ipForm.value.lng,
-          lat: ipForm.value.lat,
-          province: ipForm.value.province,
-          city: ipForm.value.city,
-          district: ipForm.value.district
+          console.log(response.data)
+          loginForm.value.ip = response.data.result.ip;
+          loginForm.value.lat = response.data.result.location.lat;
+          loginForm.value.lng = response.data.result.location.lng;
+          loginForm.value.province = response.data.result.ad_info.province;
+          loginForm.value.city = response.data.result.ad_info.city;
+          loginForm.value.district = response.data.result.ad_info.district;
+          console.log(loginForm)
         })
-        console.log(response.data)
-      } catch (error) {
-        console.log(error.response.data)
-        console.log(error)
-      }
-    }
+        .catch(error => {
+          console.error('failed to get ip', error);
+        })
 
+    };
     return {
       loginForm,
       signForm,
-      ipForm,
       // value,
       getIP,
-      storeIP,
       submitLoginForm,
       submitSignForm,
       value: valueRef,

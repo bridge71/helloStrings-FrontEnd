@@ -11,7 +11,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
-    }
+    },
   },
   server: {
     port: 8080,
@@ -31,6 +31,17 @@ export default defineConfig({
         changeOrigin: true,
         secure: false
       },
+
+      '/post': {
+        target: 'http://localhost:7777',
+        changeOrigin: true,
+        secure: false
+      },
+      '/ip?key=YHZBZ-7WPR4-AXQUK-FUHOR-5YQYH-NAFTH': {
+        target: 'https://apis.map.qq.com/ws/location/v1',
+        changeOrigin: true,
+        secure: true
+      }
     }
   },
 })
