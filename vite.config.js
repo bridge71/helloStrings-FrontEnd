@@ -26,6 +26,11 @@ export default defineConfig({
         changeOrigin: true,
         secure: false
       },
+      '/login': {
+        target: 'http://localhost:7777',
+        changeOrigin: true,
+        secure: false
+      },
       '/sale': {
         target: 'http://localhost:7777',
         changeOrigin: true,

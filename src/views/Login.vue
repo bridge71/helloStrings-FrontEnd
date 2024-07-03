@@ -72,7 +72,7 @@ export default {
       password: '',
     });
     const ipForm = ref({
-      userId: '',
+      // userId: '',
       ip: '',
       lat: '',
       lng: '',
@@ -88,7 +88,7 @@ export default {
     const value = ref("");
 
     const login = () => {
-      axios.post('/user/login', {
+      axios.post('/login', {
         nickname: loginForm.value.nickname,
         password: loginForm.value.password,
       })
@@ -98,8 +98,9 @@ export default {
             console.log("response token", response.data.User.userId);
             console.log("response level", response.data.User.level);
             sessionStorage.setItem('userToken', response.data.User.userId);
-            sessionStorage.setItem('level', response.data.User.level);
-            console.log("userToken:", sessionStorage.getItem('userToken'))
+            // sessionStorage.setItem('nickname', response.data.User.nickname);
+            // console.log("userToken:", sessionStorage.getItem('userToken'))
+            // console.log("nickname:", sessionStorage.getItem('nickname'))
             router.push({ name: 'home' });
             getIP()
           }
@@ -184,7 +185,7 @@ export default {
         ipForm.value.province = response.data.result.ad_info.province;
         ipForm.value.city = response.data.result.ad_info.city;
         ipForm.value.district = response.data.result.ad_info.district;
-        ipForm.value.userId = parseInt(sessionStorage.getItem("userToken"))
+        // ipForm.value.userId = parseInt(sessionStorage.getItem("userToken"))
         console.log(loginForm.value);
         storeIP();
       } catch (error) {
@@ -198,7 +199,7 @@ export default {
         console.log("ipform", ipForm.value)
         console.log("ip", ipForm.value.ip)
         const response = axios.post('/user/ip/store', {
-          userId: ipForm.value.userId,
+          // userId: ipForm.value.userId,
           ip: ipForm.value.ip,
           lng: ipForm.value.lng,
           lat: ipForm.value.lat,
