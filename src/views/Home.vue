@@ -106,14 +106,6 @@
                       </template>
                       喜欢
                     </n-button>
-                    <!-- <n-button size="small"> -->
-                    <!--   <template #icon> -->
-                    <!--     <n-icon> -->
-                    <!--       <cash-icon /> -->
-                    <!--     </n-icon> -->
-                    <!--   </template> -->
-                    <!--   null -->
-                    <!-- </n-button> -->
                   </n-space>
                 </template>
               </n-thing>
@@ -211,8 +203,8 @@
 <script>
 import Editor from 'primevue/editor';
 import { useRouter } from 'vue-router';
-import { h, defineComponent, ref, reactive, onMounted } from 'vue';
-import { NIcon, NDropdown, NButton } from "naive-ui";
+import { h, ref, reactive, onMounted } from 'vue';
+import { NIcon, NButton } from "naive-ui";
 import axios from 'axios';
 import { useMessage } from "naive-ui";
 import {
@@ -393,7 +385,7 @@ export default {
       try {
         console.log("get book list");
         // console.log("check Login Status, token:", sessionStorage.getItem('userToken'));
-        const response = await axios.post('/sale/book/all', {});
+        const response = await axios.post('/sale/book/fetch', {});
         data.value = response.data.BookSale;
         console.log(response.data.BookSale);
         query(pagination.page, pagination.pageSize).then((data) => {
@@ -433,7 +425,7 @@ export default {
         console.log("get posts via title");
         console.log("searchPostTitle ", searchPostTitle.value)
         // console.log("check Login Status, token:", sessionStorage.getItem('userToken'));
-        const response = await axios.post('/post/title', {
+        const response = await axios.post('/post/read/title', {
           title: searchPostTitle.value
         });
         postTitleData.value = response.data.Post;
@@ -490,7 +482,7 @@ export default {
       // checkLoginStatus();
       console.log("userId of row:", row.UserId);
       try {
-        const response = await axios.post('/user/info', { userId: row.userId });
+        const response = await axios.post('/user/id', { userId: row.userId });
         qq.value = response.data.User.email;
         console.log(response.data.User);
         console.log("qq is ", qq.value);
@@ -561,7 +553,7 @@ export default {
         return;
       }
       // console.log("userId", sessionStorage.getItem("userToken"));
-      axios.post('/post/submit', {
+      axios.post('/post/create', {
         // userId: parseInt(sessionStorage.getItem("userToken")),
         title: postTitle.value,
         content: content.value,
@@ -585,7 +577,7 @@ export default {
       console.log("profession:", model.value.profession);
       console.log("course:", model.value.course);
       console.log("value:", model.value.value);
-      axios.post('/sale/book/submit', {
+      axios.post('/sale/book/create', {
         title: model.value.title,
         author: model.value.author,
         common: model.value.common,

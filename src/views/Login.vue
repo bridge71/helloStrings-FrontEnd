@@ -61,14 +61,11 @@
 <script>
 import Editor from 'primevue/editor';
 import axios from 'axios';
-import { GlassesOutline, Glasses } from "@vicons/ionicons5";
+import { GlassesOutline } from "@vicons/ionicons5";
 import { useMessage } from "naive-ui";
-import { defineComponent, ref, computed, onMounted } from 'vue';
+import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 
-import {
-  UserAvatar as userAvatar,
-} from "@vicons/carbon"
 export default {
   setup() {
     const router = useRouter();
@@ -78,7 +75,6 @@ export default {
       password: '',
     });
     const ipForm = ref({
-      // userId: '',
       ip: '',
       lat: '',
       lng: '',
@@ -104,9 +100,6 @@ export default {
             console.log("response token", response.data.User.userId);
             console.log("response level", response.data.User.level);
             sessionStorage.setItem('userToken', response.data.User.userId);
-            // sessionStorage.setItem('nickname', response.data.User.nickname);
-            // console.log("userToken:", sessionStorage.getItem('userToken'))
-            // console.log("nickname:", sessionStorage.getItem('nickname'))
             router.push({ name: 'home' });
             getIP()
           }
@@ -224,7 +217,6 @@ export default {
       loginForm,
       signForm,
       ipForm,
-      // value,
       getIP,
       storeIP,
       submitLoginForm,

@@ -79,7 +79,7 @@ export default defineComponent({
     const message = useMessage();
     const getThePost = async () => {
       try {
-        const response = await axios.post('/post/content', { postId: parseInt(postId.value) });
+        const response = await axios.post('/post/read/id', { postId: parseInt(postId.value) });
         console.log("postContent ", response.data);
         htmlContent.value = response.data.PostContent.content;
         console.log("htmlContent ", htmlContent.value);
@@ -92,7 +92,7 @@ export default defineComponent({
 
     const createPostComments = async () => {
       try {
-        await axios.post('/post/mark/add', { postId: parseInt(postId.value) });
+        await axios.post('/post/mark/create', { postId: parseInt(postId.value) });
         message.success("评论成功")
       } catch (error) {
         console.error('获取帖子失败:', error);
@@ -105,7 +105,7 @@ export default defineComponent({
         message.warning('请输入内容');
         return;
       }
-      await axios.post('/post/comment/submit', {
+      await axios.post('/post/comment/create', {
         postId: parseInt(postId.value),
         content: comment.value,
         // nickname: sessionStorage.getItem("nickname")
@@ -119,7 +119,7 @@ export default defineComponent({
     }
     const fetchComment = async () => {
       try {
-        const response = await axios.post('/post/comment/fetch/postId', { postId: parseInt(postId.value) });
+        const response = await axios.post('/post/comment/read/id', { postId: parseInt(postId.value) });
         console.log("comment ", response.data);
         commentData.value = response.data.Comment;
         console.log("commentData ", commentData.value);
