@@ -1,18 +1,10 @@
 <template>
-  <!-- <div v-html="htmlContent"></div> -->
-  <n-watermark content="helloStrings" cross fullscreen :font-size="16" :line-height="16" :width="384" :height="384"
-    :x-offset="12" :y-offset="60" :rotate="-15" />
-  <!-- <n-switch v-model:value="show" /> -->
   <n-card>
     <n-tabs type="line" class="card-tabs" default-value="signin" size="large" animated
       pane-wrapper-style="margin: 0 -4px;" pane-style="padding-left: 4px; padding-right: 4px; box-sizing: border-box;">
 
-      <n-tab-pane name="show" tab="看帖">
 
-        <div v-html="htmlContent"></div>
-      </n-tab-pane>
-
-      <n-tab-pane name="view" tab="帖">
+      <n-tab-pane name="signin" tab="帖子">
 
         <n-back-top :right="100" />
         <n-row :gutter="[20, 28]">
@@ -21,52 +13,39 @@
               <template #avatar>
                 <n-avatar>
                   <n-icon>
-                    <cash-icon />
+                    <userAvatar />
                   </n-icon>
                 </n-avatar>
               </template>
               <template #header>
                 标题 : {{ item.title }}
               </template>
-              <template #header-extra>
-                <n-button circle size="small">
-                  <template #icon>
-                    <cash-icon />
-                  </template>
-                </n-button>
-              </template>
               <template #description>
                 作者： {{ item.nickname }}
               </template>
-              发布时间 : {{ formatDate(new Date(item.CreatedAt)) }}
-              <!-- <template #footer> -->
-              <!--   {{ item.footer }} -->
-              <!-- </template> -->
+              <template #footer>
+                发布时间 : {{ formatDate(new Date(item.CreatedAt)) }}
+                <!--   {{ item.footer }} -->
+              </template>
               <template #action>
                 <n-space>
-                  <n-button size="small" @click="getThePost(item)">
-                    <template #icon>
-                      <n-icon>
-                        <read />
-                      </n-icon>
-                    </template>
-                    阅读
-                  </n-button>
-                  <n-button size="small" @click="like">
+                  <router-link :to="{ name: 'article', params: { postId: item.postId } }">
+                    <n-button size="small">
+                      <template #icon>
+                        <n-icon>
+                          <read />
+                        </n-icon>
+                      </template>
+                      阅读
+                    </n-button>
+                  </router-link>
+                  <n-button size="small" @click="changeLikes(item.postId)">
                     <template #icon>
                       <n-icon>
                         <heart />
                       </n-icon>
                     </template>
                     喜欢
-                  </n-button>
-                  <n-button size="small">
-                    <template #icon>
-                      <n-icon>
-                        <cash-icon />
-                      </n-icon>
-                    </template>
-                    保留
                   </n-button>
                 </n-space>
               </template>
@@ -75,21 +54,88 @@
         </n-row>
       </n-tab-pane>
 
+
+      <n-tab-pane name="searchPosts" tab="搜帖">
+        <n-space vertical>
+          <n-back-top :right="100" />
+          <n-space>
+            <n-input v-model:value="searchPostTitle" type="text" size="large" round placeholder="中文搜索的话只能20个字（笑"
+              maxlength="60" show-count clearable :style="{ width: 660 + 'px' }" autosize />
+            <n-button attr-type="button" @click="getPostsTitle">
+              搜索
+            </n-button>
+          </n-space>
+          <!-- <n-progress type="line" :percentage="50" :height="24" :border-radius="4" :fill-border-radius="0" /> -->
+          <n-row :gutter="[20, 28]">
+            <n-col v-for="(item, index) in postTitleData" :key="index" :span="8">
+              <n-thing content-indented>
+                <template #avatar>
+                  <n-avatar>
+                    <n-icon>
+                      <userAvatar />
+                    </n-icon>
+                  </n-avatar>
+                </template>
+                <template #header>
+                  标题 : {{ item.title }}
+                </template>
+                <template #description>
+                  作者： {{ item.nickname }}
+                </template>
+                <template #footer>
+                  发布时间 : {{ formatDate(new Date(item.CreatedAt)) }}
+                  <!--   {{ item.footer }} -->
+                </template>
+                <template #action>
+                  <n-space>
+                    <router-link :to="{ name: 'article', params: { postId: item.postId } }">
+                      <n-button size="small">
+                        <template #icon>
+                          <n-icon>
+                            <read />
+                          </n-icon>
+                        </template>
+                        阅读
+                      </n-button>
+                    </router-link>
+                    <n-button size="small">
+                      <template #icon>
+                        <n-icon>
+                          <heart />
+                        </n-icon>
+                      </template>
+                      喜欢
+                    </n-button>
+                    <!-- <n-button size="small"> -->
+                    <!--   <template #icon> -->
+                    <!--     <n-icon> -->
+                    <!--       <cash-icon /> -->
+                    <!--     </n-icon> -->
+                    <!--   </template> -->
+                    <!--   null -->
+                    <!-- </n-button> -->
+                  </n-space>
+                </template>
+              </n-thing>
+            </n-col>
+          </n-row>
+        </n-space>
+      </n-tab-pane>
+
       <n-tab-pane name="post" tab="发帖">
 
         <n-back-top :right="100" />
         <n-form>
           <n-input v-model:value="postTitle" type="text" size="large" round placeholder="请输入标题" maxlength="20"
             show-count clearable :style="{ width: 660 + 'px' }" />
-          <n-button color="#8a2be2" @click="post">
+          <n-button color="#8a2be2" @click="submitpost">
             发布
           </n-button>
         </n-form>
-        <Editor v-model="content" editorStyle="height:780px; width: 720px;" placeholder="text it"
-          editor.content.border.color="red" />
+        <Editor v-model="content" editorStyle="height:780px; width: 720px;" editor.content.border.color="red" />
       </n-tab-pane>
 
-      <n-tab-pane name="signin" tab="书籍">
+      <n-tab-pane name="books" tab="书籍">
         <n-data-table remote ref="table" :columns="columns" :data="data" :loading="loading" :pagination="pagination"
           @update:page="handlePageChange" :row-key="rowKey" />
         <n-modal v-model:show="showQQ">
@@ -175,6 +221,9 @@ import {
   Book as read,
   Heart as heart,
 } from "@vicons/tabler";
+import {
+  UserAvatar as userAvatar,
+} from "@vicons/carbon"
 
 export default {
 
@@ -182,6 +231,7 @@ export default {
     Editor,
     read,
     heart,
+    userAvatar,
   },
   setup() {
 
@@ -289,6 +339,7 @@ export default {
     ];
     const data = ref([]);
     const postData = ref([]);
+    const postTitleData = ref([]);
     const searchData = ref([]);
     const loading = ref(true);
     const loading2 = ref(true);
@@ -362,7 +413,7 @@ export default {
       try {
         console.log("get posts");
         // console.log("check Login Status, token:", sessionStorage.getItem('userToken'));
-        const response = await axios.get('/post/all', {});
+        const response = await axios.get('/post/fetch', {});
         postData.value = response.data.Post;
         console.log("post info", response.data);
         console.log("post info", response.data.Post);
@@ -370,18 +421,24 @@ export default {
         console.error('获取帖子失败:', error);
       }
     };
-    const getThePost = async (row) => {
-      // checkLoginStatus();
+
+    const searchPostTitle = ref("")
+    const getPostsTitle = async () => {
       try {
-        // router.push({ name: 'post', query: { postId: row.postId } })
-        console.log("get The posts");
+
+        if (searchPostTitle.value.trim() === '') {
+          message.warning('请输入标题');
+          return;
+        }
+        console.log("get posts via title");
+        console.log("searchPostTitle ", searchPostTitle.value)
         // console.log("check Login Status, token:", sessionStorage.getItem('userToken'));
-        const response = await axios.post('/post/content', { postId: row.postId });
-        console.log("postId ", row.postId)
-        console.log("postContent ", response.data)
-        htmlContent.value = response.data.PostContent.content;
-        console.log("htmlContent ", htmlContent.value);
-        // router.push({ name: '' });
+        const response = await axios.post('/post/title', {
+          title: searchPostTitle.value
+        });
+        postTitleData.value = response.data.Post;
+        console.log("post info", response.data);
+        console.log("post info", response.data.Post);
       } catch (error) {
         console.error('获取帖子失败:', error);
       }
@@ -496,7 +553,7 @@ export default {
           console.log("failed get ip")
         })
     }
-    const post = () => {
+    const submitpost = () => {
       // checkLoginStatus();
       console.log("show content", content.value)
       if (postTitle.value.trim() === '') {
@@ -522,8 +579,6 @@ export default {
     }
 
     const submitBookForm = () => {
-      // checkLoginStatus();
-      // console.log("usrToken:", sessionStorage.getItem('userToken'));
       console.log("title:", model.value.title);
       console.log("author:", model.value.author);
       console.log("common:", model.value.common);
@@ -531,7 +586,6 @@ export default {
       console.log("course:", model.value.course);
       console.log("value:", model.value.value);
       axios.post('/sale/book/submit', {
-        // userId: parseInt(sessionStorage.getItem("userToken")),
         title: model.value.title,
         author: model.value.author,
         common: model.value.common,
@@ -541,12 +595,27 @@ export default {
       }).then(response => {
         if (response.status == 200) {
           console.log("response", response.data);
-          // console.log("userToken:", sessionStorage.getItem('userToken'));
           message.success("上传成功");
         }
         fetchBooks();
       }).catch(error => {
         console.error('上传失败:', error);
+        message.error(error.response.data.RetMessage);
+      });
+    };
+
+    const changeLikes = (postId) => {
+      console.log("postId", postId)
+      axios.post('/post/likes/change', {
+        postId: postId
+      }).then(response => {
+        if (response.status == 200) {
+          console.log("response", response.data);
+          message.success(response.data.RetMessage);
+        }
+        fetchBooks();
+      }).catch(error => {
+        console.error('change error:', error);
         message.error(error.response.data.RetMessage);
       });
     };
@@ -599,41 +668,14 @@ export default {
       handleValidateButtonClick,
       handlePageChange,
       handlePageChange2,
-      post,
-      fetchPosts,
-      getThePost,
+      submitpost,
       getIP,
       fetchPosts,
       postData,
-      // like,
-      items: [
-        {
-          header: '货币 1',
-          description: '描述 1',
-          content: '货币是为了提高交易效率而用于交换的中介商品。货币有多种形式，如贝壳粮食等自然物、金属纸张等加工品、银行卡信用卡等磁条卡、移动支付加密货币等APP。',
-          footer: '尾部 1'
-        },
-        {
-          header: '货币 2',
-          description: '描述 2',
-          content: '货币是为了提高交易效率而用于交换的中介商品。货币有多种形式，如贝壳粮食等自然物、金属纸张等加工品、银行卡信用卡等磁条卡、移动支付加密货币等APP。',
-          footer: '尾部 2'
-        },
-        {
-          header: '货币 3',
-          description: '描述 3',
-          content: '货币是为了提高交易效率而用于交换的中介商品。货币有多种形式，如贝壳粮食等自然物、金属纸张等加工品、银行卡信用卡等磁条卡、移动支付加密货币等APP。',
-          footer: '尾部 3'
-        },
-
-        {
-          header: '货币 3',
-          description: '描述 3',
-          content: '货币是为了提高交易效率而用于交换的中介商品。货币有多种形式，如贝壳粮食等自然物、金属纸张等加工品、银行卡信用卡等磁条卡、移动支付加密货币等APP。',
-          footer: '尾部 3'
-        },
-        // like,
-      ]
+      postTitleData,
+      getPostsTitle,
+      searchPostTitle,
+      changeLikes,
     };
   }
 };
