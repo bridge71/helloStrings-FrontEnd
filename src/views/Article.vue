@@ -1,7 +1,5 @@
 <template>
-
   <div class="content-container">
-
     <n-back-top :right="100" />
     <n-space vertical>
       <div v-html="htmlContent" />
@@ -23,19 +21,17 @@
               <div v-html="item.content" />
             </template>
             <template #footer>
-              发布时间 : {{ formatDate(new Date(item.CreatedAt)) }}
+              发布时间 : {{ formatDate(new Date(item.createdAt)) }}
             </template>
           </n-thing>
         </n-col>
       </n-row>
-      <!-- </n-flex> -->
-
       <n-progress type="line" :percentage="99" :height="14" :border-radius="4" :fill-border-radius="0" />
       <n-input maxlength="600" show-count v-model:value="comment" type="textarea" clearable placeholder="评论"
         :style="{ width: 700 + 'px' }" />
       <n-space justify="center">
         <n-button color="#8a2be2" @click="submitComment">
-          发布
+          评论
         </n-button>
       </n-space>
     </n-space>
@@ -58,7 +54,6 @@ import { useMessage } from "naive-ui";
 import { defineComponent, ref, computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { NImage } from 'naive-ui';
-
 import {
   UserAvatar as userAvatar,
 } from "@vicons/carbon"
@@ -75,16 +70,14 @@ export default defineComponent({
     const loading2 = ref(true);
     const commentData = ref([]);
     const comment = ref("");
-
     const message = useMessage();
+
     const getThePost = async () => {
       try {
         const response = await axios.post('/post/read/id', { postId: parseInt(postId.value) });
-        console.log("postContent ", response.data);
         htmlContent.value = response.data.PostContent.content;
-        console.log("htmlContent ", htmlContent.value);
       } catch (error) {
-        console.error('获取帖子失败:', error);
+        console.error('error in getThePost:', error);
       } finally {
         loading.value = false;
       }
@@ -95,12 +88,10 @@ export default defineComponent({
         await axios.post('/post/mark/create', { postId: parseInt(postId.value) });
         message.success("评论成功")
       } catch (error) {
-        console.error('获取帖子失败:', error);
+        console.error('error in createPostComments:', error);
       }
     };
     const submitComment = async () => {
-      // checkLoginStatus();
-      console.log("show comment content", comment.value)
       if (comment.value.trim() === '') {
         message.warning('请输入内容');
         return;
@@ -108,23 +99,20 @@ export default defineComponent({
       await axios.post('/post/comment/create', {
         postId: parseInt(postId.value),
         content: comment.value,
-        // nickname: sessionStorage.getItem("nickname")
       }).then(response => {
         createPostComments()
         fetchComment();
       }).catch(error => {
-        console.error('评论失败:', error);
+        console.error("error in submitComment", error);
         message.error(error.response.data.RetMessage);
       });
     }
     const fetchComment = async () => {
       try {
         const response = await axios.post('/post/comment/read/id', { postId: parseInt(postId.value) });
-        console.log("comment ", response.data);
         commentData.value = response.data.Comment;
-        console.log("commentData ", commentData.value);
       } catch (error) {
-        console.error('获取评论失败:', error);
+        console.error('error in fetchComment:', error);
       } finally {
         loading2.value = false;
       }

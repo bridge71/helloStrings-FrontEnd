@@ -1,5 +1,4 @@
 <template>
-
   <n-watermark content="helloStrings" cross fullscreen :font-size="16" :line-height="16" :width="384" :height="384"
     :x-offset="12" :y-offset="60" :rotate="-15" />
   <n-card>
@@ -7,7 +6,7 @@
       pane-style="padding-left: 154px; padding-right: 154px; box-sizing: border-box;">
       <n-tab-pane name="signin" tab="登录">
         <Editor v-model="value" editorStyle="height: 320px" />
-        <n-form @submit="submitLoginForm">
+        <n-form @submit="post">
           <n-form-item-row label="昵称">
             <n-input v-model:value="loginForm.nickname" placeholder="请输入昵称" />
           </n-form-item-row>
@@ -87,25 +86,21 @@ export default {
       password: '',
     });
     const valueRef = ref("");
-    const value = ref("");
 
     const login = () => {
-      axios.post('/login', {
+      axios.post('/_login', {
         nickname: loginForm.value.nickname,
         password: loginForm.value.password,
       })
         .then(response => {
           if (response.status == 200) {
-            console.log("response", response.data);
-            console.log("response token", response.data.User.userId);
-            console.log("response level", response.data.User.level);
             sessionStorage.setItem('userToken', response.data.User.userId);
             router.push({ name: 'home' });
             getIP()
           }
         })
         .catch(error => {
-          console.error('登录失败:', error);
+          // console.error('登录失败:', error);
           message.error(error.response.data.RetMessage)
         });
     };
@@ -117,7 +112,6 @@ export default {
         email: valueRef.value
       })
         .then(response => {
-          // console.log("register data", response.data);
           if (response.status == 200) {
             message.success("注册成功");
             router.push({ name: 'login' });
@@ -125,13 +119,10 @@ export default {
         })
         .catch(error => {
           message.error(error.response.data.RetMessage)
-          console.error('注册失败:', error);
         });
     };
 
     const submitLoginForm = async () => {
-      // console.log(loginForm.value);
-
       if (loginForm.value.nickname.trim() === '') {
         message.warning('请输入用户名');
         return;
@@ -140,12 +131,10 @@ export default {
         message.warning('请输入密码');
         return;
       }
-
       login();
     };
 
     const submitSignForm = () => {
-      // console.log(signForm.value);
       if (signForm.value.nickname.trim() === '') {
         message.warning('请输入用户名');
         return;
@@ -155,7 +144,6 @@ export default {
         return;
       }
 
-      console.log(valueRef.value)
       if (valueRef.value.trim() === '') {
         message.warning('请输入邮箱');
         return;
@@ -174,31 +162,23 @@ export default {
     })
 
     const getIP = async () => {
-      console.log("getting ip")
       try {
         const response = await axios.get('/ip?key=YHZBZ-7WPR4-AXQUK-FUHOR-5YQYH-NAFTH', {});
-        console.log("get info from qq", response.data)
         ipForm.value.ip = response.data.result.ip;
         ipForm.value.lat = response.data.result.location.lat;
         ipForm.value.lng = response.data.result.location.lng;
         ipForm.value.province = response.data.result.ad_info.province;
         ipForm.value.city = response.data.result.ad_info.city;
         ipForm.value.district = response.data.result.ad_info.district;
-        // ipForm.value.userId = parseInt(sessionStorage.getItem("userToken"))
-        console.log(loginForm.value);
         storeIP();
       } catch (error) {
-        console.error('failed to get ip', error);
+        console.error("error in getIP:", error)
       }
     };
 
     const storeIP = async () => {
-      console.log("store ip")
       try {
-        console.log("ipform", ipForm.value)
-        console.log("ip", ipForm.value.ip)
-        const response = axios.post('/user/ip/store', {
-          // userId: ipForm.value.userId,
+        axios.post('/user/ip/create', {
           ip: ipForm.value.ip,
           lng: ipForm.value.lng,
           lat: ipForm.value.lat,
@@ -206,10 +186,8 @@ export default {
           city: ipForm.value.city,
           district: ipForm.value.district
         })
-        console.log(response.data)
       } catch (error) {
-        console.log(error.response.data)
-        console.log(error)
+        console.log("error in storeIP", error)
       }
     }
 

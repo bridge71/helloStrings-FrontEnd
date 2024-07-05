@@ -1,11 +1,25 @@
 <template>
+  <n-page-header subtitle="「琴弦」" @back="handleBack">
+    <template #title>
+      <a href="https://github.com/bridge71/helloStrings" style="text-decoration: none; color: inherit">helloStrings</a>
+    </template>
+    <template #extra>
+      <n-space>
+        <n-button size="small" @click="goSpace()">
+          <template #icon>
+            <n-icon>
+              <UserIcon />
+            </n-icon>
+          </template>
+          个人中心
+        </n-button>
+      </n-space>
+    </template>
+  </n-page-header>
   <n-card>
     <n-tabs type="line" class="card-tabs" default-value="signin" size="large" animated
       pane-wrapper-style="margin: 0 -4px;" pane-style="padding-left: 4px; padding-right: 4px; box-sizing: border-box;">
-
-
       <n-tab-pane name="signin" tab="帖子">
-
         <n-back-top :right="100" />
         <n-row :gutter="[20, 28]">
           <n-col v-for="(item, index) in postData" :key="index" :span="8">
@@ -24,7 +38,7 @@
                 作者： {{ item.nickname }}
               </template>
               <template #footer>
-                发布时间 : {{ formatDate(new Date(item.CreatedAt)) }}
+                发布时间 : {{ formatDate(new Date(item.createdAt)) }}
                 <!--   {{ item.footer }} -->
               </template>
               <template #action>
@@ -39,13 +53,13 @@
                       阅读
                     </n-button>
                   </router-link>
-                  <n-button size="small" @click="changeLikes(item.postId)">
+                  <n-button size="small" @click="changeLikes(item.postId, item.likes)">
                     <template #icon>
                       <n-icon>
                         <heart />
                       </n-icon>
                     </template>
-                    喜欢
+                    {{ item.likes }}
                   </n-button>
                 </n-space>
               </template>
@@ -53,8 +67,6 @@
           </n-col>
         </n-row>
       </n-tab-pane>
-
-
       <n-tab-pane name="searchPosts" tab="搜帖">
         <n-space vertical>
           <n-back-top :right="100" />
@@ -65,6 +77,13 @@
               搜索
             </n-button>
           </n-space>
+          <n-radio-group v-model:value="searchPostBy" name="radiogroup">
+            <n-space>
+              <n-radio v-for="search in searchesPost" :key="search.value" :value="search.value">
+                {{ search.label }}
+              </n-radio>
+            </n-space>
+          </n-radio-group>
           <!-- <n-progress type="line" :percentage="50" :height="24" :border-radius="4" :fill-border-radius="0" /> -->
           <n-row :gutter="[20, 28]">
             <n-col v-for="(item, index) in postTitleData" :key="index" :span="8">
@@ -83,7 +102,7 @@
                   作者： {{ item.nickname }}
                 </template>
                 <template #footer>
-                  发布时间 : {{ formatDate(new Date(item.CreatedAt)) }}
+                  发布时间 : {{ formatDate(new Date(item.createdAt)) }}
                   <!--   {{ item.footer }} -->
                 </template>
                 <template #action>
@@ -98,7 +117,7 @@
                         阅读
                       </n-button>
                     </router-link>
-                    <n-button size="small">
+                    <n-button size="small" @click="changeLikes(item.postId)">
                       <template #icon>
                         <n-icon>
                           <heart />
@@ -113,20 +132,17 @@
           </n-row>
         </n-space>
       </n-tab-pane>
-
       <n-tab-pane name="post" tab="发帖">
-
         <n-back-top :right="100" />
         <n-form>
           <n-input v-model:value="postTitle" type="text" size="large" round placeholder="请输入标题" maxlength="20"
             show-count clearable :style="{ width: 660 + 'px' }" />
-          <n-button color="#8a2be2" @click="submitpost">
+          <n-button color="#8a2be2" @click="submitPost">
             发布
           </n-button>
         </n-form>
         <Editor v-model="content" editorStyle="height:780px; width: 720px;" editor.content.border.color="red" />
       </n-tab-pane>
-
       <n-tab-pane name="books" tab="书籍">
         <n-data-table remote ref="table" :columns="columns" :data="data" :loading="loading" :pagination="pagination"
           @update:page="handlePageChange" :row-key="rowKey" />
@@ -136,7 +152,6 @@
           </div>
         </n-modal>
       </n-tab-pane>
-
       <n-tab-pane name="searchbooks" tab="书籍搜索">
         <n-space>
           <n-input v-model:value="searchForm.key" type="text" size="large" round placeholder="中文搜索的话只能12个字（笑"
@@ -155,7 +170,6 @@
         <n-data-table v-if="isSearch" remote ref="table" :columns="columns" :data="searchData" :loading="loading2"
           :pagination="pagination2" @update:page="handlePageChange2" :row-key="rowKey" />
       </n-tab-pane>
-
       <n-tab-pane name="bookinput" tab="书籍录入">
         <n-form class="myform" ref="formRef" :model="model" :rules="rules" label-placement="left" label-width="auto"
           require-mark-placement="right-hanging" :size="size" :style="{
@@ -185,11 +199,9 @@
           </div>
         </n-form>
       </n-tab-pane>
-
     </n-tabs>
   </n-card>
 </template>
-
 <style>
 .myform {
   display: flex;
@@ -217,6 +229,10 @@ import {
   UserAvatar as userAvatar,
 } from "@vicons/carbon"
 
+import {
+  PersonCircleOutline as UserIcon,
+} from "@vicons/ionicons5";
+
 export default {
 
   components: {
@@ -224,9 +240,11 @@ export default {
     read,
     heart,
     userAvatar,
+    UserIcon,
   },
   setup() {
 
+    const searchPostBy = ref("")
     const htmlContent = ref("")
     const content = ref([]);
     const postTitle = ref("");
@@ -238,6 +256,10 @@ export default {
       { value: "author", label: "by author" },
       { value: "profession", label: "by profession" },
       { value: "course", label: "by course" },
+    ];
+    const searchesPost = [
+      { value: "title", label: "by title" },
+      { value: "author", label: "by author" },
     ];
     const defaultSearch = ref(searches[0].value);
     const isShowQQ = ref(false);
@@ -278,9 +300,9 @@ export default {
     };
     const column6 = {
       title: '日期',
-      key: 'Created_at',
+      key: 'created_at',
       render(row) {
-        return h('div', [h('span', null, formatDate(new Date(row.CreatedAt)))]);
+        return h('div', [h('span', null, formatDate(new Date(row.createdAt)))]);
       }
     };
     function formatDate(date) {
@@ -315,7 +337,7 @@ export default {
         return h(
           NIcon,
           { size: '20' },
-          { default: () => row.isSold ? h(sellOffIcon) : h(sellOnIcon) }
+          { default: () => row.IsSold ? h(sellOffIcon) : h(sellOnIcon) }
         );
       }
     };
@@ -381,13 +403,9 @@ export default {
       });
     }
     const fetchBooks = async () => {
-      // checkLoginStatus();
       try {
-        console.log("get book list");
-        // console.log("check Login Status, token:", sessionStorage.getItem('userToken'));
         const response = await axios.post('/sale/book/fetch', {});
         data.value = response.data.BookSale;
-        console.log(response.data.BookSale);
         query(pagination.page, pagination.pageSize).then((data) => {
           dataRef.value = data.data;
           pagination.pageCount = data.pageCount;
@@ -395,54 +413,56 @@ export default {
           loadingRef.value = false;
         });
       } catch (error) {
-        console.error('获取书籍列表失败:', error);
+        console.error('error in fetchBooks:', error);
       } finally {
         loading.value = false;
       }
     };
+
     const fetchPosts = async () => {
-      // checkLoginStatus();
       try {
-        console.log("get posts");
-        // console.log("check Login Status, token:", sessionStorage.getItem('userToken'));
         const response = await axios.get('/post/fetch', {});
         postData.value = response.data.Post;
-        console.log("post info", response.data);
-        console.log("post info", response.data.Post);
       } catch (error) {
-        console.error('获取帖子失败:', error);
+        console.error('error in fetchPosts:', error);
       }
     };
 
     const searchPostTitle = ref("")
     const getPostsTitle = async () => {
       try {
-
         if (searchPostTitle.value.trim() === '') {
-          message.warning('请输入标题');
+          message.warning('请输入关键字');
           return;
         }
-        console.log("get posts via title");
-        console.log("searchPostTitle ", searchPostTitle.value)
-        // console.log("check Login Status, token:", sessionStorage.getItem('userToken'));
-        const response = await axios.post('/post/read/title', {
-          title: searchPostTitle.value
-        });
-        postTitleData.value = response.data.Post;
-        console.log("post info", response.data);
-        console.log("post info", response.data.Post);
+        if (searchPostBy.value.trim() === '') {
+          message.warning('请选择搜索策略');
+          return;
+        }
+        if (searchPostBy.value.trim() === 'title') {
+          const response = await axios.post('/post/read/title', {
+            title: searchPostTitle.value,
+          });
+          postTitleData.value = response.data.Post;
+        } else {
+          const response = await axios.post('/post/read/nickname', {
+            nickname: searchPostTitle.value,
+          });
+          postTitleData.value = response.data.Post;
+        }
       } catch (error) {
-        console.error('获取帖子失败:', error);
+        console.error('error in getPostsTitle:', error);
       }
     };
+
     onMounted(() => {
+      checkLoginStatus();
       fetchBooks();
       fetchPosts();
-      checkLoginStatus();
     });
+
     const searchForm = ref({ by: "", key: "" });
     const submitSearchForm = () => {
-      console.log(searchForm.value);
       if (searchForm.value.key.trim() === '') {
         message.warning('请输入关键字');
         return;
@@ -453,10 +473,9 @@ export default {
       }
       searchBook();
     };
+
     const searchBook = async () => {
-      // checkLoginStatus();
       try {
-        console.log("search books by", searchForm.value);
         const response = await axios.post('/sale/book/by', {
           key: searchForm.value.key,
           by: searchForm.value.by
@@ -471,26 +490,26 @@ export default {
         });
         fetchBooks();
       } catch (error) {
-        console.error('failed when get books by:', error);
+        console.error('error in searchBook:', error);
       } finally {
         loading2.value = false;
       }
-
     };
-    const getInfo = async (row) => {
 
-      // checkLoginStatus();
-      console.log("userId of row:", row.UserId);
+    const getInfo = async (row) => {
+      if (row.IsSold === true) {
+        message.warning("已售出")
+        return
+      }
       try {
         const response = await axios.post('/user/id', { userId: row.userId });
         qq.value = response.data.User.email;
-        console.log(response.data.User);
-        console.log("qq is ", qq.value);
         isShowQQ.value = true;
       } catch (error) {
-        console.error('failed when fetch info from row:', error);
+        console.error('error in getInfo:', error);
       }
     };
+
     const router = useRouter();
     const formRef = ref(null);
     const message = useMessage();
@@ -528,44 +547,43 @@ export default {
         });
       }
     }
+
     const checkLoginStatus = () => {
       const token = sessionStorage.getItem('userToken');
-      // console.log("check Login Status, token:", sessionStorage.getItem('userToken'));
       if (token == null) {
         router.push({ name: 'login' });
       }
     };
+
+    const goSpace = () => {
+      router.push({ name: 'space' });
+    };
+
     const ip = ref("")
     const getIP = () => {
       axios.get('https://api.ipify.org?format=json', {})
         .then(response => {
           ip.value = response.data.ip;
-          console.log("ip  ", ip.value)
         }).catch(error => {
-          console.log("failed get ip")
+          console.log("error in getIP", error)
         })
     }
-    const submitpost = () => {
-      // checkLoginStatus();
-      console.log("show content", content.value)
+
+    const submitPost = () => {
       if (postTitle.value.trim() === '') {
         message.warning('请输入标题');
         return;
       }
-      // console.log("userId", sessionStorage.getItem("userToken"));
       axios.post('/post/create', {
-        // userId: parseInt(sessionStorage.getItem("userToken")),
         title: postTitle.value,
         content: content.value,
-        // nickname: sessionStorage.getItem("nickname")
       }).then(response => {
         if (response.status == 200) {
-          console.log("response", response.data);
           message.success("发帖成功");
         }
         fetchPosts();
       }).catch(error => {
-        console.error('发帖失败:', error);
+        console.error('error in submitPost:', error);
         message.error(error.response.data.RetMessage);
       });
     }
@@ -586,28 +604,26 @@ export default {
         value: parseInt(model.value.value),
       }).then(response => {
         if (response.status == 200) {
-          console.log("response", response.data);
           message.success("上传成功");
         }
         fetchBooks();
       }).catch(error => {
-        console.error('上传失败:', error);
+        console.error('error in submitBookForm:', error);
         message.error(error.response.data.RetMessage);
       });
     };
 
-    const changeLikes = (postId) => {
-      console.log("postId", postId)
+    const changeLikes = (postId, likes) => {
       axios.post('/post/likes/change', {
-        postId: postId
+        postId: postId,
+        likes: likes
       }).then(response => {
         if (response.status == 200) {
-          console.log("response", response.data);
           message.success(response.data.RetMessage);
         }
-        fetchBooks();
+        fetchPosts();
       }).catch(error => {
-        console.error('change error:', error);
+        console.error('error in changeLikes', error);
         message.error(error.response.data.RetMessage);
       });
     };
@@ -660,7 +676,7 @@ export default {
       handleValidateButtonClick,
       handlePageChange,
       handlePageChange2,
-      submitpost,
+      submitPost,
       getIP,
       fetchPosts,
       postData,
@@ -668,6 +684,9 @@ export default {
       getPostsTitle,
       searchPostTitle,
       changeLikes,
+      goSpace,
+      searchesPost,
+      searchPostBy,
     };
   }
 };
