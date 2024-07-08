@@ -1,4 +1,4 @@
-# helloStringsf
+# helloString-FrontEnd
 
 This is the front end of [helloStrings](https://github.com/bridge71/helloStrings).
 
